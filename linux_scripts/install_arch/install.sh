@@ -33,7 +33,7 @@ ls |grep -v tmp |grep -v dev |grep -v proc |grep -v run |grep -v sys |xargs rm -
 echo "============================================"
 echo "=============Installing Arch================"
 echo "============================================"
-pacstrap /mnt base base-devel linux linux-firmware nmap socat grub openssh python python-pip zsh zsh-doc tcpdump man git zip unzip wget cronie bmon vim networkmanager
+pacstrap /mnt base base-devel linux linux-firmware nmap socat grub openssh python python-pip zsh zsh-doc tcpdump man git zip unzip wget cronie bmon vim networkmanager clash fail2ban netdata
 genfstab -U /mnt >> /mnt/etc/fstab
 cat /mnt/etc/fstab
 mkdir /mnt/root/.ssh
