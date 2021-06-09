@@ -52,7 +52,7 @@ cat << !EOF! > /root/.gitconfig
 
 cat << !EOF! >> /etc/pacman.conf
 [archlinuxcn]
-Server = https://mirrors.tuna.tsinghua.edu.cn/archlinuxcn/$arch
+Server = https://mirrors.tuna.tsinghua.edu.cn/archlinuxcn/\$arch
 !EOF!
 pacman -Syuu
 pacman -S archlinuxcn-keyring
