@@ -50,8 +50,34 @@ cat << !EOF! > /root/.gitconfig
 	insteadOf = https://github.com
 !EOF!
 
+cat << !EOF! >> /etc/pacman.conf
+[archlinuxcn]
+Server = https://mirrors.tuna.tsinghua.edu.cn/archlinuxcn/$arch
+!EOF!
+pacman -Syuu
+pacman -S archlinuxcn-keyring
+pacman -S archlinuxcn-mirrorlist-git clash-geoip clash-premium-bin
+curl https://cdn.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/clash.service -o /etc/systemd/system/clash@.service
+curl https://cdn.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/renew_log.sh -o /root/renew_log.sh
+curl https://cdn.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/fail2ban.tgz -o /etc/fail2ban/fail2ban.tgz
+cd /etc/fail2ban
+tar -zxvf fail2ban.tgz
+
 systemctl disable systemd-networkd.service systemd-resolved.service
-systemctl enable NetworkManager.service sshd.service cronie.service he-ipv6.service
+systemctl enable NetworkManager.service sshd.service cronie.service he-ipv6.service nginx.service mariadb.service
+ssh-keygen -b 4096
+sh -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/ohmyzsh/ohmyzsh@master/tools/install.sh)"
+sed "s/robbyrussell/random/g" /root/.zshrc -i
+sed "s/(git)/(git zsh-autosuggestions zsh-syntax-highlighting z extract command-not-found colored-man-pages colorize)/" /root/.zshrc -i
+git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+
+mkdir /etc/cert
+curl https://get.acme.sh | sh
+mkdir -p /var/www/letsencrypt
+
+chown -R netdata /usr/share/netdata/web
+ln -s /bin/vim /bin/vi
 passwd
 
 echo "============================================"
