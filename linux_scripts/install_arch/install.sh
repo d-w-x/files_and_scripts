@@ -33,7 +33,7 @@ ls |grep -v tmp |grep -v dev |grep -v proc |grep -v run |grep -v sys |xargs rm -
 echo "============================================"
 echo "=============Installing Arch================"
 echo "============================================"
-pacstrap /mnt base base-devel linux linux-firmware nmap socat grub openssh python python-pip zsh zsh-doc tcpdump man git zip unzip wget cronie bmon vim networkmanager fail2ban nginx mariadb
+pacstrap /mnt base base-devel linux linux-firmware linux-headers
 genfstab -U /mnt >> /mnt/etc/fstab
 cat /mnt/etc/fstab
 mkdir /mnt/root/.ssh
@@ -43,13 +43,3 @@ echo "============================================"
 echo "============Switching to Arch==============="
 echo "============================================"
 arch-chroot /mnt # 此步骤不可有报错，可能由于 resolv.conf 引起
-read -p "Is switch correct:(y/n)" corr
-case $corr in
-    [yY][eE][sS]|[yY])
-		echo "Continuing..."
-		;;
-    *)
-		echo "Exitting..."
-		exit 1
-		;;
-esac
