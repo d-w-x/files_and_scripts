@@ -77,13 +77,19 @@ pacman -S archlinuxcn-mirrorlist-git clash-geoip clash-premium-bin nmap socat gr
 curl https://cdn.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/clash.service -o /etc/systemd/system/clash@.service
 curl https://cdn.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/renew_log.sh -o /root/renew_log.sh
 curl https://cdn.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/fail2ban.tgz -o /etc/fail2ban/fail2ban.tgz
+curl https://cdn.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/nginx_renew.sh -o /etc/nginx/nginx_renew.sh
 tar -zxvf /etc/fail2ban/fail2ban.tgz -C /etc/fail2ban
 rm -rf /etc/fail2ban/fail2ban.tgz
 
 echo "==systemctl=="
 systemctl disable systemd-networkd.service systemd-resolved.service
-systemctl enable NetworkManager.service sshd.service cronie.service he-ipv6.service nginx.service mariadb.service
+systemctl enable NetworkManager.service sshd.service cronie.service he-ipv6.service nginx.service mariadb.service iptables.service
 ssh-keygen -b 4096
+
+echo "==sshd=="
+sed "s/#TCPKeepAlive yes/TCPKeepAlive yes/g" /etc/ssh/sshd_config -i
+sed "s/#ClientAliveInterval 0/ClientAliveInterval 30/g" /etc/ssh/sshd_config -i
+sed "s/#ClientAliveCountMax 3/ClientAliveCountMax 3/g" /etc/ssh/sshd_config -i
 
 echo "==zsh=="
 sh -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/ohmyzsh/ohmyzsh@master/tools/install.sh)"
