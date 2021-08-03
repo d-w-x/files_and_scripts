@@ -33,6 +33,7 @@ ls |grep -v tmp |grep -v dev |grep -v proc |grep -v run |grep -v sys |xargs rm -
 echo "============================================"
 echo "=============Installing Arch================"
 echo "============================================"
+sed "s/#ParallelDownloads = 5/ParallelDownloads = 5/g" /etc/pacman.conf -i
 pacstrap /mnt base base-devel linux linux-firmware linux-headers
 genfstab -U /mnt >> /mnt/etc/fstab
 cat /mnt/etc/fstab
@@ -42,4 +43,6 @@ cp ~/authorized_keys /mnt/root/.ssh/.
 echo "============================================"
 echo "============Switching to Arch==============="
 echo "============================================"
+rm /mnt/etc/resolv.conf
+cp /etc/resolv.conf /mnt/etc/resolv.conf.back
 arch-chroot /mnt # 此步骤不可有报错，可能由于 resolv.conf 引起

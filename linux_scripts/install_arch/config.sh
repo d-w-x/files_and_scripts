@@ -5,9 +5,9 @@ echo "============================================"
 
 echo "==locale=="
 sed "s/#en_GB.UTF-8 UTF-8/en_GB.UTF-8 UTF-8/" /etc/locale.gen -i
-locale-gen
 echo 'LANG=en_US.UTF-8'>> /etc/locale.conf
 ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
+locale-gen
 
 echo "==hosts=="
 read -p "Enter your hostname:" hostnm
@@ -15,7 +15,6 @@ echo "$hostnm" >> /etc/hostname
 cat << !EOF! >> /etc/hosts
 127.0.0.1    localhost
 127.0.0.1    ${hostnm}
-
 ::1          localhost ip6-localhost ip6-loopback
 ff02::1      ip6-allnodes
 ff02::2      ip6-allrouters
@@ -33,7 +32,6 @@ case $he in
 		[Unit]
 		Description=he.net IPv6 tunnel
 		After=network.target
-
 		[Service]
 		Type=oneshot
 		RemainAfterExit=yes
@@ -44,7 +42,6 @@ case $he in
 		ExecStop=/usr/bin/ip -6 route del ::/0 dev he-ipv6
 		ExecStop=/usr/bin/ip link set he-ipv6 down
 		ExecStop=/usr/bin/ip tunnel del he-ipv6
-
 		[Install]
 		WantedBy=multi-user.target
 		!EOF!
@@ -54,7 +51,6 @@ case $he in
 		exit 1
 		;;
 esac
-
 echo "==.gitconfig=="
 cat << !EOF! > /root/.gitconfig
 [pull]
@@ -71,6 +67,8 @@ cat << '!EOF!' >> /etc/pacman.conf
 Server = https://mirrors.tuna.tsinghua.edu.cn/archlinuxcn/$arch
 !EOF!
 
+mv /etc/resolv.conf.back /etc/resolv.conf
+sed "s/#ParallelDownloads = 5/ParallelDownloads = 5/g" /etc/pacman.conf -i
 pacman -Syuu
 pacman -S archlinuxcn-keyring --noconfirm
 pacman -S archlinuxcn-mirrorlist-git clash-geoip clash-premium-bin nmap socat grub openssh python python-pip zsh zsh-doc tcpdump man git zip unzip wget cronie bmon vim networkmanager fail2ban nginx mariadb --noconfirm
@@ -83,7 +81,7 @@ rm -rf /etc/fail2ban/fail2ban.tgz
 
 echo "==systemctl=="
 systemctl disable systemd-networkd.service systemd-resolved.service
-systemctl enable NetworkManager.service sshd.service cronie.service he-ipv6.service nginx.service mariadb.service iptables.service
+systemctl enable NetworkManager.service sshd.service cronie.service he-ipv6.service nginx.service mariadb.service iptables.service fail2ban.service
 ssh-keygen -b 4096
 
 echo "==sshd=="
