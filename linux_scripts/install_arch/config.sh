@@ -5,14 +5,14 @@ echo "============================================"
 
 echo "==locale=="
 sed "s/#en_GB.UTF-8 UTF-8/en_GB.UTF-8 UTF-8/" /etc/locale.gen -i
-echo 'LANG=en_US.UTF-8'>> /etc/locale.conf
+echo 'LANG=en_US.UTF-8'> /etc/locale.conf
 ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 locale-gen
 
 echo "==hosts=="
 read -p "Enter your hostname:" hostnm
-echo "$hostnm" >> /etc/hostname
-cat << !EOF! >> /etc/hosts
+echo "$hostnm" > /etc/hostname
+cat << !EOF! > /etc/hosts
 127.0.0.1    localhost
 127.0.0.1    ${hostnm}
 ::1          localhost ip6-localhost ip6-loopback
@@ -29,28 +29,30 @@ case $he in
 		read -p "Enter your he_ipv4:" he_ipv4
 		read -p "Enter your he_ipv6:" he_ipv6
 		cat << !EOF! > /etc/systemd/system/he-ipv6.service
-		[Unit]
-		Description=he.net IPv6 tunnel
-		After=network.target
-		[Service]
-		Type=oneshot
-		RemainAfterExit=yes
-		ExecStart=/usr/bin/ip tunnel add he-ipv6 mode sit remote ${he_ipv4} local ${ipaddr} ttl 255
-		ExecStart=/usr/bin/ip link set he-ipv6 up mtu 1480
-		ExecStart=/usr/bin/ip addr add ${he_ipv6} dev he-ipv6
-		ExecStart=/usr/bin/ip -6 route add ::/0 dev he-ipv6
-		ExecStop=/usr/bin/ip -6 route del ::/0 dev he-ipv6
-		ExecStop=/usr/bin/ip link set he-ipv6 down
-		ExecStop=/usr/bin/ip tunnel del he-ipv6
-		[Install]
-		WantedBy=multi-user.target
-		!EOF!
+[Unit]
+Description=he.net IPv6 tunnel
+After=network.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/bin/ip tunnel add he-ipv6 mode sit remote ${he_ipv4} local ${ipaddr} ttl 255
+ExecStart=/usr/bin/ip link set he-ipv6 up mtu 1480
+ExecStart=/usr/bin/ip addr add ${he_ipv6} dev he-ipv6
+ExecStart=/usr/bin/ip -6 route add ::/0 dev he-ipv6
+ExecStop=/usr/bin/ip -6 route del ::/0 dev he-ipv6
+ExecStop=/usr/bin/ip link set he-ipv6 down
+ExecStop=/usr/bin/ip tunnel del he-ipv6
+
+[Install]
+WantedBy=multi-user.target
+!EOF!
 		;;
     *)
 		echo "No he-ipv6!"
-		exit 1
 		;;
 esac
+
 echo "==.gitconfig=="
 cat << !EOF! > /root/.gitconfig
 [pull]
@@ -104,7 +106,7 @@ mkdir -p /var/www/letsencrypt
 echo "==bbr=="
 touch /etc/sysctl.conf
 mkdir -p /etc/sysctl.d
-cat << '!EOF!' >> /etc/sysctl.d/99-bbr.conf
+cat << '!EOF!' > /etc/sysctl.d/99-bbr.conf
 net.ipv4.tcp_tw_reuse = 1
 net.ipv4.tcp_fin_timeout = 30
 net.ipv4.tcp_syncookies = 1
@@ -127,7 +129,7 @@ device=$( df -h |grep '/$' |awk '{print $1}')
 device=${device:0:8}
 grub-install $device
 grub-mkconfig -o /boot/grub/grub.cfg
-read -p "Is grub install correct:(y/n) " corr
+read -r -p "Is grub install correct:(y/n) " corr
 case $corr in
     [yY][eE][sS]|[yY])
 		echo "Install done, hard reboot please."
