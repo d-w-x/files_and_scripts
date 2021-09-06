@@ -5,7 +5,7 @@ echo "============================================"
 pacman-key --init
 pacman-key --populate archlinux
 pacman -Syy
-pacman -S vim grep --noconfirm
+pacman -S vim grep sed --noconfirm
 
 device=$(df -h |grep "/$" |awk '{print $1}')
 mount $device /mnt

@@ -84,6 +84,9 @@ rm -rf /etc/fail2ban/fail2ban.tgz
 echo "==systemctl=="
 systemctl disable systemd-networkd.service systemd-resolved.service
 systemctl enable NetworkManager.service sshd.service cronie.service he-ipv6.service nginx.service mariadb.service iptables.service fail2ban.service
+rm -rf /var/lib/mysql
+mkdir -p /var/lib/mysql
+mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
 ssh-keygen -b 4096
 
 echo "==sshd=="
