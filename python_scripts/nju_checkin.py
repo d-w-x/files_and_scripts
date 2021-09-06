@@ -102,7 +102,7 @@ def do_nju_checkin():
 
     answer = json.loads(result.text)
     answer['location'] = data['CURR_LOCATION']
-    LOG += answer
+    LOG += str(answer)
 
     if result.status_code != 200:
         LOG += f"checkin error: {result.text}"

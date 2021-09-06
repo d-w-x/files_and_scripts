@@ -55,9 +55,9 @@ push_config = {
 notify_function = []
 
 # 读取配置文件中的变量
-CONFIG_PATH = os.getenv("CONFIG_PATH") or "./notify_config.json5"
+CONFIG_PATH = os.getenv("NOTIFY_CONFIG_PATH") or "notify_config.json5"
 if os.path.exists(CONFIG_PATH):
-    for k, v in json.loads(CONFIG_PATH):
+    for k, v in dict(json.load(open(CONFIG_PATH, mode="r", encoding="utf-8"))).items():
         if k in push_config:
             push_config[k] = v
 
