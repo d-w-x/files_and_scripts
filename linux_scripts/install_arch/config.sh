@@ -5,7 +5,7 @@ echo "============================================"
 
 echo "==locale=="
 sed "s/#en_GB.UTF-8 UTF-8/en_GB.UTF-8 UTF-8/" /etc/locale.gen -i
-echo 'LANG=en_US.UTF-8'> /etc/locale.conf
+echo 'LANG=en_GB.UTF-8'> /etc/locale.conf
 ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 locale-gen
 
@@ -122,6 +122,8 @@ net.ipv4.tcp_congestion_control=bbr
 !EOF!
 
 ln -s /bin/vim /bin/vi
+sed -i "s/#ClientAliveInterval 0/ClientAliveInterval 60/g" /etc/ssh/sshd_config
+sed -i "s/#ClientAliveCountMax 3/ClientAliveCountMax 3/g" /etc/ssh/sshd_config
 passwd
 
 echo "============================================"
