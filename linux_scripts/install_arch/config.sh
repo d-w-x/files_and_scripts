@@ -47,6 +47,7 @@ ExecStop=/usr/bin/ip tunnel del he-ipv6
 [Install]
 WantedBy=multi-user.target
 !EOF!
+		systemctl enable he-ipv6.service
 		;;
     *)
 		echo "No he-ipv6!"
@@ -73,7 +74,7 @@ mv /etc/resolv.conf.back /etc/resolv.conf
 sed "s/#ParallelDownloads = 5/ParallelDownloads = 5/g" /etc/pacman.conf -i
 pacman -Syuu
 pacman -S archlinuxcn-keyring --noconfirm
-pacman -S archlinuxcn-mirrorlist-git clash-geoip clash-premium-bin nmap socat grub openssh python python-pip zsh zsh-doc tcpdump man git zip unzip wget cronie bmon vim networkmanager fail2ban nginx mariadb --noconfirm
+pacman -S os-prober efibootmgr archlinuxcn-mirrorlist-git clash-geoip clash-premium-bin nmap socat htop grub openssh python python-pip zsh zsh-doc tcpdump man git zip unzip wget cronie bmon vim networkmanager fail2ban nginx mariadb --noconfirm
 curl https://cdn.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/clash.service -o /etc/systemd/system/clash@.service
 curl https://cdn.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/renew_log.sh -o /root/renew_log.sh
 curl https://cdn.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/fail2ban.tgz -o /etc/fail2ban/fail2ban.tgz
@@ -83,11 +84,11 @@ rm -rf /etc/fail2ban/fail2ban.tgz
 
 echo "==systemctl=="
 systemctl disable systemd-networkd.service systemd-resolved.service
-systemctl enable NetworkManager.service sshd.service cronie.service he-ipv6.service nginx.service mariadb.service iptables.service fail2ban.service
+systemctl enable NetworkManager.service sshd.service cronie.service nginx.service mariadb.service iptables.service fail2ban.service
 rm -rf /var/lib/mysql
 mkdir -p /var/lib/mysql
 mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
-ssh-keygen -b 4096
+ssh-keygen -t ed25519
 
 echo "==sshd=="
 sed "s/#TCPKeepAlive yes/TCPKeepAlive yes/g" /etc/ssh/sshd_config -i
@@ -103,7 +104,11 @@ git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:
 
 echo "==acme=="
 mkdir /etc/cert
-curl https://get.acme.sh | sh
+cd ~
+git clone https://ghproxy.com/github.com/acmesh-official/acme.sh.git
+cd acme.sh
+./acme.sh --install
+rm -rf acme.sh
 mkdir -p /var/www/letsencrypt
 
 echo "==bbr=="
