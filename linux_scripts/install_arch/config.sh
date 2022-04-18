@@ -74,7 +74,7 @@ mv /etc/resolv.conf.back /etc/resolv.conf
 sed "s/#ParallelDownloads = 5/ParallelDownloads = 5/g" /etc/pacman.conf -i
 pacman -Syuu
 pacman -S archlinuxcn-keyring --noconfirm
-pacman -S os-prober efibootmgr archlinuxcn-mirrorlist-git clash-geoip clash-premium-bin nmap socat htop grub openssh python python-pip zsh zsh-doc tcpdump man git zip unzip wget cronie bmon vim networkmanager fail2ban nginx mariadb --noconfirm
+pacman -S os-prober efibootmgr archlinuxcn-mirrorlist-git clash-geoip clash-premium-bin nmap socat duf htop grub openssh python python-pip zsh zsh-doc tcpdump man git zip unzip wget cronie bmon vim networkmanager fail2ban nginx mariadb --noconfirm
 curl https://cdn.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/clash.service -o /etc/systemd/system/clash@.service
 curl https://cdn.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/renew_log.sh -o /root/renew_log.sh
 curl https://cdn.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/fail2ban.tgz -o /etc/fail2ban/fail2ban.tgz

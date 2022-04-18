@@ -1,0 +1,4 @@
+requests
+PyExecJS
+pytz
+ddddocr

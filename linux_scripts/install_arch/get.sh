@@ -21,3 +21,12 @@ echo "============================================"
 echo "============Switch to bootstrap============="
 echo "============================================"
 /tmp/root.x86_64/bin/arch-chroot /tmp/root.x86_64/ # 有报错
+
+  # mount --bind /tmp/root.x86_64 /tmp/root.x86_64
+  # cd /tmp/root.x86_64
+  # cp /etc/resolv.conf etc
+  # mount -t proc /proc proc
+  # mount --make-rslave --rbind /sys sys
+  # mount --make-rslave --rbind /dev dev
+  # mount --make-rslave --rbind /run run    # （假设文件系统上存在 /run）
+  # chroot /tmp/root.x86_64 /bin/bash
