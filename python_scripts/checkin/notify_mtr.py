@@ -307,7 +307,7 @@ def qmsg_bot(title: str, content: str) -> None:
     url = f'https://qmsg.zendee.cn/{push_config.get("QMSG_TYPE")}/{push_config.get("QMSG_KEY")}'
     payload = {"msg": f'{title}\n\n{content.replace("----", "-")}'.encode("utf-8")}
 
-    datas = requests.post(url=url, params=payload, timeout=15).json()
+    datas = requests.post(url=url, data=payload, timeout=15).json()
     if datas.get("code") == 0:
         print("qmsg 推送成功！")
     else:
@@ -360,7 +360,7 @@ class WeCom:
             "corpid": self.CORPID,
             "corpsecret": self.CORPSECRET,
         }
-        req = requests.post(url, params=values, timeout=15)
+        req = requests.post(url, data=values, timeout=15)
         datas = json.loads(req.text)
         return datas.get("access_token")
 
@@ -466,7 +466,7 @@ def telegram_bot(title: str, content: str) -> None:
         proxies = {"http": proxyStr, "https": proxyStr}
 
     datas = requests.post(
-        url=url, headers=headers, params=payload, proxies=proxies, timeout=15
+        url=url, headers=headers, data=payload, proxies=proxies, timeout=15
     ).json()
     if datas.get("ok") == True:
         print("tg 推送成功！")

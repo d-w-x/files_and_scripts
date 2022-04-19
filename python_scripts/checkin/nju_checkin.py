@@ -1,3 +1,5 @@
+import random
+import time
 from os import getenv
 
 from njupass import NjuUiaAuth
@@ -7,7 +9,7 @@ URL_JKDK_LIST = 'http://ehallapp.nju.edu.cn/xgfw/sys/yqfxmrjkdkappnju/apply/getA
 URL_JKDK_APPLY = 'http://ehallapp.nju.edu.cn/xgfw/sys/yqfxmrjkdkappnju/apply/saveApplyInfos.do?'
 
 
-def do_nju_checkin(username: str, password: str):
+def do_nju_checkin(auth: NjuUiaAuth, username: str, password: str):
     if username == '' or password == '':
         log.error('账户、密码或为空！')
 
@@ -39,31 +41,33 @@ def do_nju_checkin(username: str, password: str):
                 "ZJHSJCSJ"  # 最近核酸检测时间
             ]
             log.info('正在打卡...')
-            answer = auth.session.get(URL_JKDK_APPLY + '&'.join([key + '=' + data[key] for key in fields])).json()
+            answer = auth.session.get(
+                URL_JKDK_APPLY + '&'.join([key + '=' + data[key] for key in fields if data.get(key)])
+            ).json()
             answer['location'] = data['CURR_LOCATION']
-            answer['check_date'] = data['ZJHSJCSJ']
+            answer['check_date'] = data.get("ZJHSJCSJ", "Null")
+            answer['account'] = username
             log.info(answer)
         else:
-            log.info('今日已打卡！')
+            log.info(f'{username} 今日已打卡！')
         return
     log.error('打卡失败，请尝试手动打卡')
 
 
 # DDDD_SERVER=http://192.168.10.80:9898
 ocr_server = getenv("DDDD_SERVER")
-auth = NjuUiaAuth(ocr_server)
 
 # NJU_USERINFO=USERNAME1@PASSWORD1;USERNAME2@PASSWORD2
 accounts = getenv('NJU_USERINFO')
 if accounts:
     for account in accounts.split(';'):
-        do_nju_checkin(*account.split('@'))
+        do_nju_checkin(NjuUiaAuth(ocr_server), *account.split('@'))
+        time.sleep(random.choice(range(15, 30)))
 else:
     log.error('NJU_USERINFO 变量为空！')
 
 try:
     from notify_mtr import send
-    import time
 
     send(f'NJU checkin at {time.strftime("%m-%d %H:%M:%S", time.localtime())}', LOG_STR.getvalue())
 except ModuleNotFoundError:
