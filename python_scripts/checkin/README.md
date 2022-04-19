@@ -13,14 +13,18 @@
 
 ## 更新
 
-- 2022-4-18 适配青龙。
-- 2022-4-17 更新了基于 ddddocr 库的验证码自动识别。
-- 2022-4-10 更新了近日离宁和核酸时间的支持。 
+- 2022-04-19 使用外置 [OCR 服务器](https://github.com/sml2h3/ocr_api_server)
+- 2022-04-18 适配青龙。
+- 2022-04-17 更新了基于 ddddocr 库的验证码自动识别。
+- 2022-04-10 更新了近日离宁和核酸时间的支持。 
 - 2021-10-19 之前使用的方案实测已经无法正常使用，目前已回退旧方案。已 fork 的用户请更新后使用。
 
 ## 使用方法
 
-密码填写方式：环境变量，`NJU_USERINFO=[USERNAME1]$[PASSWORD1];[USERNAME2]$[PASSWORD2]`
+环境变量
+
+- 密码：`NJU_USERINFO=[USERNAME1]@[PASSWORD1];[USERNAME2]@[PASSWORD2]`
+- OCR 服务器： `DDDD_SERVER=http://192.168.10.80:9898`
 
 ## 每次打卡做了什么
 

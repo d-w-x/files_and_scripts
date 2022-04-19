@@ -6,6 +6,7 @@ from utils import log, LOG_STR
 URL_JKDK_LIST = 'http://ehallapp.nju.edu.cn/xgfw/sys/yqfxmrjkdkappnju/apply/getApplyInfoList.do'
 URL_JKDK_APPLY = 'http://ehallapp.nju.edu.cn/xgfw/sys/yqfxmrjkdkappnju/apply/saveApplyInfos.do?'
 
+
 def do_nju_checkin(username: str, password: str):
     if username == '' or password == '':
         log.error('账户、密码或为空！')
@@ -52,18 +53,18 @@ def do_nju_checkin(username: str, password: str):
 ocr_server = getenv("DDDD_SERVER")
 auth = NjuUiaAuth(ocr_server)
 
-# NJU_USERINFO=USERNAME1$PASSWORD1;USERNAME2$PASSWORD2
+# NJU_USERINFO=USERNAME1@PASSWORD1;USERNAME2@PASSWORD2
 accounts = getenv('NJU_USERINFO')
 if accounts:
     for account in accounts.split(';'):
-        do_nju_checkin(*account.split('$'))
+        do_nju_checkin(*account.split('@'))
 else:
     log.error('NJU_USERINFO 变量为空！')
 
 try:
-    from notify import send
+    from notify_mtr import send
     import time
 
-    send(f'NJU checkin at {time.strftime("%m-%d %H:%M:%S", time.localtime())}', LOG_STR)
+    send(f'NJU checkin at {time.strftime("%m-%d %H:%M:%S", time.localtime())}', LOG_STR.getvalue())
 except ModuleNotFoundError:
-    print(LOG_STR)
+    print(LOG_STR.getvalue())

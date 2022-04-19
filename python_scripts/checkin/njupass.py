@@ -61,6 +61,7 @@ class NjuUiaAuth:
                 import ddddocr
                 ocr_res = ddddocr.DdddOcr(show_ad=0).classification(pic_byte)
             if ocr_res:
+                log.info(f"Captcha code is {ocr_res}.")
                 return ocr_res
             log.warning(f"The {try_times} try to login failed!")
             time.sleep(1)
