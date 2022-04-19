@@ -1,4 +1,4 @@
 requests
 PyExecJS
 pytz
-ddddocr
+tomli

@@ -6,9 +6,6 @@ from utils import log, LOG_STR
 URL_JKDK_LIST = 'http://ehallapp.nju.edu.cn/xgfw/sys/yqfxmrjkdkappnju/apply/getApplyInfoList.do'
 URL_JKDK_APPLY = 'http://ehallapp.nju.edu.cn/xgfw/sys/yqfxmrjkdkappnju/apply/saveApplyInfos.do?'
 
-auth = NjuUiaAuth()
-
-
 def do_nju_checkin(username: str, password: str):
     if username == '' or password == '':
         log.error('账户、密码或为空！')
@@ -50,6 +47,10 @@ def do_nju_checkin(username: str, password: str):
         return
     log.error('打卡失败，请尝试手动打卡')
 
+
+# DDDD_SERVER=http://192.168.10.80:9898
+ocr_server = getenv("DDDD_SERVER")
+auth = NjuUiaAuth(ocr_server)
 
 # NJU_USERINFO=USERNAME1$PASSWORD1;USERNAME2$PASSWORD2
 accounts = getenv('NJU_USERINFO')

@@ -9,7 +9,6 @@ import os
 import re
 import time
 
-import ddddocr
 import execjs
 import requests
 
@@ -25,9 +24,13 @@ class NjuUiaAuth:
         Designed for passing Unified Identity Authentication(UIA) of Nanjing University.
     """
 
-    def __init__(self):
+    def __init__(self, dddd_server: str):
         self.session = requests.Session()
         self.session.headers.update({'User-Agent': USER_AGENT})
+        if not dddd_server:
+            log.info("No dddd server configured, use `ddddocr` package!")
+        else:
+            self.dddd_server = dddd_server
 
         r = self.session.get(URL_NJU_UIA_AUTH)
         self.lt = re.search(
@@ -41,6 +44,7 @@ class NjuUiaAuth:
         self.pwdDefaultEncryptSalt = re.search(
             r'var pwdDefaultEncryptSalt = "(.*)"', r.text).group(1)
 
+
     def getCaptchaCode(self, try_times: int = 3) -> str:
         """
         DESCRIPTION:
@@ -50,12 +54,14 @@ class NjuUiaAuth:
         """
         url = 'https://authserver.nju.edu.cn/authserver/captcha.html'
         for _ in range(try_times):
-            res = self.session.get(url, stream=True)
-            ocr = ddddocr.DdddOcr(show_ad=0)
-            # with BytesIO(res.content) as f:
-            res = ocr.classification(res.content)
-            if res:
-                return res
+            pic_byte = self.session.get(url, stream=True).content
+            if self.dddd_server:
+                ocr_res = requests.post(f"{self.dddd_server.rstrip('/')}/ocr/file", files={'image': pic_byte}).text
+            else:
+                import ddddocr
+                ocr_res = ddddocr.DdddOcr(show_ad=0).classification(pic_byte)
+            if ocr_res:
+                return ocr_res
             log.warning(f"The {try_times} try to login failed!")
             time.sleep(1)
         return ""
