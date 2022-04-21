@@ -108,9 +108,10 @@ class NjuUiaAuth:
             self.session.cookies.load(cookie_path, ignore_discard=True, ignore_expires=True)
             for _ in range(3):
                 try:
-                    if self.session.get(URL_NJU_UIA_INFO).text.find(r"logout?service=/authserver/login") == -1:
+                    if self.session.get(URL_NJU_UIA_INFO).url != URL_NJU_UIA_INFO:
                         log.warning("Cookie expired! Reset cookie.")
                         os.remove(cookie_path)
+                        self.session = requests.Session()
                         self.session.cookies = MozillaCookieJar()
                         return False
                     log.info(f"Use cookie to login. {_}/3")
@@ -143,8 +144,10 @@ class NjuUiaAuth:
                 time.sleep(choice(range(5)))
                 continue
             if ok:
-                log.info("Cookie saved.")
+                self.session.cookies.clear(domain="authserver.nju.edu.cn", path="/", name="JSESSIONID")
+                self.session.cookies.clear(domain="authserver.nju.edu.cn", path="/authserver", name="route")
                 self.session.cookies.save(f"./{username}.ck", ignore_discard=True)
+                log.info("Cookie saved.")
                 return True
             log.warning(f"The {_} try to login failed!")
             time.sleep(choice(range(5)))
