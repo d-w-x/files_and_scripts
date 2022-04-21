@@ -1,12 +1,13 @@
-import random
 import time
 from os import getenv
+from random import choice
 
 from njupass import NjuUiaAuth
 from utils import log, LOG_STR
 
 URL_JKDK_LIST = 'http://ehallapp.nju.edu.cn/xgfw/sys/yqfxmrjkdkappnju/apply/getApplyInfoList.do'
 URL_JKDK_APPLY = 'http://ehallapp.nju.edu.cn/xgfw/sys/yqfxmrjkdkappnju/apply/saveApplyInfos.do?'
+URL_JDKD_INDEX = 'http://ehallapp.nju.edu.cn/xgfw/sys/mrjkdkappnju/index.html'
 
 
 def do_nju_checkin(auth: NjuUiaAuth, username: str, password: str):
@@ -15,15 +16,19 @@ def do_nju_checkin(auth: NjuUiaAuth, username: str, password: str):
 
     log.info('尝试登录...')
     if not auth.tryLogin(username, password):
-        log.error('登录失败。可能是用户名或密码错误，或是验证码无法识别。')
+        log.error('登录失败。可能是用户名或密码错误，或是验证码无法识别，或是网络问题。')
     log.info('登录成功！')
 
-    for count in range(10):
+    for count in range(3):
         log.info('尝试获取打卡列表信息...')
-        r = auth.session.get(URL_JKDK_LIST)
+        try:
+            r = auth.session.get(URL_JKDK_LIST)
+        except ConnectionError:
+            r = {"status_code": -1}
+
         if r.status_code != 200:
-            log.info(f'第 {count} 次尝试获取打卡信息失败。')
-            time.sleep(5)
+            log.info(f'第 {count}/3 次尝试获取打卡信息失败。')
+            time.sleep(choice(range(10)))
             continue
 
         content = r.json()
@@ -41,9 +46,20 @@ def do_nju_checkin(auth: NjuUiaAuth, username: str, password: str):
                 "ZJHSJCSJ"  # 最近核酸检测时间
             ]
             log.info('正在打卡...')
-            answer = auth.session.get(
-                URL_JKDK_APPLY + '&'.join([key + '=' + data[key] for key in fields if data.get(key)])
-            ).json()
+            headers = {
+                'Referer': URL_JDKD_INDEX,  # required since 2022/4/20
+                'X-Requested-With': 'com.wisedu.cpdaily.nju',
+            }
+            auth.session.headers.update(headers)
+            try:
+                answer = auth.session.get(
+                    URL_JKDK_APPLY + '&'.join([key + '=' + data[key] for key in fields if data.get(key)])
+                ).json()
+            except ConnectionError:
+                log.warning(f"打卡的时候链接失败！ {count}/3")
+                time.sleep(choice(range(10)))
+                continue
+
             answer['location'] = data['CURR_LOCATION']
             answer['check_date'] = data.get("ZJHSJCSJ", "Null")
             answer['account'] = username
@@ -62,7 +78,7 @@ accounts = getenv('NJU_USERINFO')
 if accounts:
     for account in accounts.split(';'):
         do_nju_checkin(NjuUiaAuth(ocr_server), *account.split('@'))
-        time.sleep(random.choice(range(15, 30)))
+        time.sleep(choice(range(15, 30)))
 else:
     log.error('NJU_USERINFO 变量为空！')
 
