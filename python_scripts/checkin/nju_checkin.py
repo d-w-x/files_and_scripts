@@ -17,6 +17,7 @@ def do_nju_checkin(auth: NjuUiaAuth, username: str, password: str):
     log.info('尝试登录...')
     if not auth.tryLogin(username, password):
         log.error('登录失败。可能是用户名或密码错误，或是验证码无法识别，或是网络问题。')
+        return
     log.info('登录成功！')
 
     for count in range(3):

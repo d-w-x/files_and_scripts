@@ -37,18 +37,6 @@ class NjuUiaAuth:
         else:
             self.dddd_server = dddd_server
 
-        r = self.session.get(URL_NJU_UIA_AUTH)
-        self.lt = re.search(
-            r'<input type="hidden" name="lt" value="(.*)"/>', r.text).group(1)
-        self.execution = re.search(
-            r'<input type="hidden" name="execution" value="(.*)"/>', r.text).group(1)
-        self._eventId = re.search(
-            r'<input type="hidden" name="_eventId" value="(.*)"/>', r.text).group(1)
-        self.rmShown = re.search(
-            r'<input type="hidden" name="rmShown" value="(.*)"', r.text).group(1)
-        self.pwdDefaultEncryptSalt = re.search(
-            r'var pwdDefaultEncryptSalt = "(.*)"', r.text).group(1)
-
 
     def getCaptchaCode(self, try_times: int = 3) -> str:
         """
@@ -108,11 +96,13 @@ class NjuUiaAuth:
             self.session.cookies.load(cookie_path, ignore_discard=True, ignore_expires=True)
             for _ in range(3):
                 try:
+                    self.session.get(f"{URL_NJU_UIA_AUTH}?service={URL_NJU_UIA_INFO}")
                     if self.session.get(URL_NJU_UIA_INFO).url != URL_NJU_UIA_INFO:
                         log.warning("Cookie expired! Reset cookie.")
                         os.remove(cookie_path)
                         self.session = requests.Session()
                         self.session.cookies = MozillaCookieJar()
+                        self.session.headers.update({"User-Agent": USER_AGENT})
                         return False
                     log.info(f"Use cookie to login. {_}/3")
                     return True
@@ -162,6 +152,18 @@ class NjuUiaAuth:
             username(str)
             password(str)
         """
+        r = self.session.get(URL_NJU_UIA_AUTH)
+        self.lt = re.search(
+            r'<input type="hidden" name="lt" value="(.*)"/>', r.text).group(1)
+        self.execution = re.search(
+            r'<input type="hidden" name="execution" value="(.*)"/>', r.text).group(1)
+        self._eventId = re.search(
+            r'<input type="hidden" name="_eventId" value="(.*)"/>', r.text).group(1)
+        self.rmShown = re.search(
+            r'<input type="hidden" name="rmShown" value="(.*)"', r.text).group(1)
+        self.pwdDefaultEncryptSalt = re.search(
+            r'var pwdDefaultEncryptSalt = "(.*)"', r.text).group(1)
+
         data = {
             'username': username,
             'password': self.parsePassword(password),
