@@ -130,5 +130,5 @@ dmypy.json
 
 # pycharm
 .idea/
-*.ck
+*_ck.json
 notify.toml

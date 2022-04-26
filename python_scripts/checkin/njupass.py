@@ -5,11 +5,12 @@ PACKAGES:
     NjuUiaAuth
     NjuEliteAuth
 """
+import json
 import os
 import re
 import time
-from http.cookiejar import MozillaCookieJar
 from random import choice
+from urllib.parse import quote_plus
 
 import execjs
 import requests
@@ -17,7 +18,7 @@ import requests
 from utils import log
 
 URL_NJU_UIA_AUTH = "https://authserver.nju.edu.cn/authserver/login"
-URL_NJU_UIA_INFO = "https://authserver.nju.edu.cn/authserver/index.do"
+URL_NJU_UIA_INFO = "http://ehallapp.nju.edu.cn/psfw/sys/tzggapp/mobile/getUnReadCount.do"
 USER_AGENT = "Mozilla/5.0 (Linux; Android 12; Redmi K30 Pro Zoom Edition Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/100.0.4896.88 Mobile Safari/537.36 okhttp/3.12.4 cpdaily/9.0.15 wisedu/9.0.15"
 
 
@@ -29,7 +30,6 @@ class NjuUiaAuth:
 
     def __init__(self, dddd_server: str):
         self.session = requests.Session()
-        self.session.cookies = MozillaCookieJar()
         self.session.headers.update({"User-Agent": USER_AGENT})
         if not dddd_server:
             log.info("No dddd server configured, use `ddddocr` package!")
@@ -50,7 +50,7 @@ class NjuUiaAuth:
             try:
                 pic_byte = self.session.get(url, stream=True).content
             except ConnectionError:
-                log.warning(f"Can't connect to auth servet to get captcha. {_}/{try_times}")
+                log.warning(f"Can't connect to auth servet to get captcha. {_ + 1}/{try_times}")
                 time.sleep(choice(range(5)))
                 continue
 
@@ -91,20 +91,21 @@ class NjuUiaAuth:
             return False
 
     def tryCookie(self, username):
-        cookie_path = f"./{username}.ck"
+        cookie_path = f"./{username}_ck.json"
         if os.path.isfile(cookie_path):
-            self.session.cookies.load(cookie_path, ignore_discard=True, ignore_expires=True)
+            with open(cookie_path, "r") as f:
+                COOKIE = "; ".join("=".join(t) for t in json.load(f).items())
             for _ in range(3):
                 try:
-                    self.session.get(f"{URL_NJU_UIA_AUTH}?service={URL_NJU_UIA_INFO}")
+                    self.session.get(f"{URL_NJU_UIA_AUTH}?service={quote_plus(URL_NJU_UIA_INFO)}",
+                                     headers={"cookie": COOKIE, "User-Agent": USER_AGENT})
                     if self.session.get(URL_NJU_UIA_INFO).url != URL_NJU_UIA_INFO:
                         log.warning("Cookie expired! Reset cookie.")
                         os.remove(cookie_path)
                         self.session = requests.Session()
-                        self.session.cookies = MozillaCookieJar()
                         self.session.headers.update({"User-Agent": USER_AGENT})
                         return False
-                    log.info(f"Use cookie to login. {_}/3")
+                    log.info(f"Use cookie to login. {_ + 1}/3")
                     return True
                 except ConnectionError:
                     continue
@@ -130,13 +131,20 @@ class NjuUiaAuth:
             try:
                 ok = self.login(username, password, captchaResponse=captchaText)
             except ConnectionError:
-                log.warning(f"Can't connect to auth server to login! {_}/{try_times}")
+                log.warning(f"Can't connect to auth server to login! {_ + 1}/{try_times}")
                 time.sleep(choice(range(5)))
                 continue
             if ok:
                 self.session.cookies.clear(domain="authserver.nju.edu.cn", path="/", name="JSESSIONID")
                 self.session.cookies.clear(domain="authserver.nju.edu.cn", path="/authserver", name="route")
-                self.session.cookies.save(f"./{username}.ck", ignore_discard=True)
+                ck = {}
+                if self.session.cookies.get("CASTGC", ""):
+                    ck["CASTGC"] = str(self.session.cookies.get("CASTGC"))
+                    ck["AUTHTGC"] = str(self.session.cookies.get("CASTGC"))
+                if self.session.cookies.get("iPlanetDirectoryPro", ""):
+                    ck["iPlanetDirectoryPro"] = str(self.session.cookies.get("iPlanetDirectoryPro"))
+                with open(f"{username}_ck.json", "w+") as f:
+                    json.dump(ck, f, ensure_ascii=False)
                 log.info("Cookie saved.")
                 return True
             log.warning(f"The {_} try to login failed!")
