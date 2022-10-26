@@ -74,7 +74,7 @@ mv /etc/resolv.conf.back /etc/resolv.conf
 sed "s/#ParallelDownloads = 5/ParallelDownloads = 5/g" /etc/pacman.conf -i
 pacman -Syuu
 pacman -S archlinuxcn-keyring --noconfirm
-pacman -S os-prober efibootmgr archlinuxcn-mirrorlist-git clash-geoip clash-premium-bin nmap socat duf htop grub openssh python python-pip zsh zsh-doc tcpdump man git zip unzip wget cronie bmon vim networkmanager fail2ban nginx mariadb --noconfirm
+pacman -S os-prober efibootmgr archlinuxcn-mirrorlist-git clash-geoip clash-premium-bin nmap socat duf nnn atool htop grub openssh python python-pip zsh zsh-doc tcpdump man git tmux zip unzip wget cronie bmon vim networkmanager fail2ban nginx mariadb --noconfirm
 curl https://cdn.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/clash.service -o /etc/systemd/system/clash@.service
 curl https://cdn.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/renew_log.sh -o /root/renew_log.sh
 curl https://cdn.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/fail2ban.tgz -o /etc/fail2ban/fail2ban.tgz
@@ -97,10 +97,11 @@ sed "s/#ClientAliveCountMax 3/ClientAliveCountMax 3/g" /etc/ssh/sshd_config -i
 
 echo "==zsh=="
 sh -c "$(curl -fsSL https://cdn.jsdelivr.net/gh/ohmyzsh/ohmyzsh@master/tools/install.sh)"
-sed "s/robbyrussell/random/g" /root/.zshrc -i
-sed "s/(git)/(git zsh-autosuggestions zsh-syntax-highlighting z extract command-not-found colored-man-pages colorize)/" /root/.zshrc -i
+sed "s/robbyrussell/random/g" ~/.zshrc -i
+sed "s/(git)/(git zsh-autosuggestions zsh-syntax-highlighting z extract command-not-found colored-man-pages colorize)/" ~/.zshrc -i
 git clone https://github.com/zsh-users/zsh-autosuggestions ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-autosuggestions
 git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/zsh-syntax-highlighting
+curl https://fastly.jsdelivr.net/gh/gpakosz/.tmux@master/.tmux.conf -o ~/.tmux.conf
 
 echo "==acme=="
 mkdir /etc/cert
