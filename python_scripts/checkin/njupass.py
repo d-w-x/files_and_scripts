@@ -19,7 +19,7 @@ from utils import log
 
 URL_NJU_UIA_AUTH = "https://authserver.nju.edu.cn/authserver/login"
 URL_NJU_UIA_INFO = "http://ehallapp.nju.edu.cn/psfw/sys/tzggapp/mobile/getUnReadCount.do"
-USER_AGENT = "Mozilla/5.0 (Linux; Android 12; Redmi K30 Pro Zoom Edition Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/100.0.4896.88 Mobile Safari/537.36 okhttp/3.12.4 cpdaily/9.0.15 wisedu/9.0.15"
+USER_AGENT = "Mozilla/5.0 (Linux; Android 12; Redmi K30 Pro Zoom Edition Build/SKQ1.211006.001; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/104.0.5112.97 Mobile Safari/537.36 cpdaily/9.0.15 wisedu/9.0.15"
 
 
 class NjuUiaAuth:
@@ -30,13 +30,20 @@ class NjuUiaAuth:
 
     def __init__(self, dddd_server: str):
         self.session = requests.Session()
-        self.session.headers.update({"User-Agent": USER_AGENT})
+        self.session.headers.update({
+            "User-Agent": USER_AGENT,
+            "Accept": "application/json, text/plain, */*",
+            "Accept-Encoding": "gzip, deflate",
+            "Connection": "keep-alive",
+            "Accept-Language": "zh-CN,zh;q=0.9,en-US;q=0.8,en;q=0.7",
+            "X-Requested-With": "com.wisedu.cpdaily.nju",
+            "Referer": "http://ehallapp.nju.edu.cn/xgfw/sys/mrjkdkappnju/index.html"
+        })
         if not dddd_server:
             log.info("No dddd server configured, use `ddddocr` package!")
             self.dddd_server = ""
         else:
             self.dddd_server = dddd_server
-
 
     def getCaptchaCode(self, try_times: int = 3) -> str:
         """
@@ -55,7 +62,7 @@ class NjuUiaAuth:
                 continue
 
             if self.dddd_server:
-                ocr_res = requests.post(f"{self.dddd_server.rstrip('/')}/ocr/file", files={"image": pic_byte}).text
+                ocr_res = requests.post(f"{self.dddd_server.rstrip('/')}/ocr/file/text", files={"image": pic_byte}).text
             else:
                 import ddddocr
                 ocr_res = ddddocr.DdddOcr(show_ad=0).classification(pic_byte)
@@ -76,19 +83,6 @@ class NjuUiaAuth:
         with open(os.path.join(os.path.dirname(__file__), './encrypt.js')) as f:
             ctx = execjs.compile(f.read())
         return ctx.call("encryptAES", password, self.pwdDefaultEncryptSalt)
-
-    def needCaptcha(self, username: str) -> bool:
-        url = f"https://authserver.nju.edu.cn/authserver/needCaptcha.html?username={username}"
-        try:
-            r = self.session.post(url)
-        except ConnectionError:
-            r = {"text": ""}
-
-        if 'true' in r.text:
-            log.info("统一认证平台需要输入验证码才能继续，尝试识别验证码...")
-            return True
-        else:
-            return False
 
     def tryCookie(self, username):
         cookie_path = f"./{username}_ck.json"
@@ -125,9 +119,7 @@ class NjuUiaAuth:
             return True
 
         for _ in range(try_times):
-            captchaText = ""
-            if self.needCaptcha(username):
-                captchaText = self.getCaptchaCode()
+            captchaText = self.getCaptchaCode()
             try:
                 ok = self.login(username, password, captchaResponse=captchaText)
             except ConnectionError:

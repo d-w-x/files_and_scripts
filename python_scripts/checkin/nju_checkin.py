@@ -44,7 +44,8 @@ def do_nju_checkin(auth: NjuUiaAuth, username: str, password: str):
                 "JRSKMYS",  # 今日苏康码颜色
                 "JZRJRSKMYS",  # 居住人今日苏康码颜色
                 "SFZJLN",  # 是否最近离宁
-                "ZJHSJCSJ"  # 最近核酸检测时间
+                "ZJHSJCSJ",  # 最近核酸检测时间
+                "DQDXGZK",  # 当前感染状态
             ]
             log.info('正在打卡...')
             headers = {
@@ -62,7 +63,6 @@ def do_nju_checkin(auth: NjuUiaAuth, username: str, password: str):
                 continue
 
             answer['location'] = data['CURR_LOCATION']
-            answer['check_date'] = data.get("ZJHSJCSJ", "Null")
             answer['account'] = username
             log.info(answer)
         else:
