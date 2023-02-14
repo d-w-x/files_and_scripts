@@ -1,0 +1,12 @@
+{
+    "registry-mirrors":[
+        "https://dockerproxy.com"
+    ],
+    "bip":"10.200.0.0/16",
+    "default-address-pools":[
+        {
+            "base":"10.201.0.0/16",
+            "size":24
+        }
+    ]
+}

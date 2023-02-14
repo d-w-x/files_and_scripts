@@ -1,18 +1,18 @@
-#/bin/env bash
+#!/bin/env bash
 echo "============================================"
 echo "===============Configing Arch==============="
 echo "============================================"
 
 echo "==locale=="
-sed "s/#en_GB.UTF-8 UTF-8/en_GB.UTF-8 UTF-8/" /etc/locale.gen -i
-echo 'LANG=en_GB.UTF-8'> /etc/locale.conf
+sed "s/#en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/" /etc/locale.gen -i
+echo 'LANG=en_US.UTF-8'> /etc/locale.conf
 ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime
 locale-gen
 
 echo "==hosts=="
 read -p "Enter your hostname:" hostnm
 echo "$hostnm" > /etc/hostname
-cat << !EOF! > /etc/hosts
+cat << '!EOF!' > /etc/hosts
 127.0.0.1    localhost
 127.0.0.1    ${hostnm}
 ::1          localhost ip6-localhost ip6-loopback
@@ -28,7 +28,7 @@ case $he in
     [yY][eE][sS]|[yY])
 		read -p "Enter your he_ipv4:" he_ipv4
 		read -p "Enter your he_ipv6:" he_ipv6
-		cat << !EOF! > /etc/systemd/system/he-ipv6.service
+		cat << '!EOF!' > /etc/systemd/system/he-ipv6.service
 [Unit]
 Description=he.net IPv6 tunnel
 After=network.target
@@ -55,7 +55,7 @@ WantedBy=multi-user.target
 esac
 
 echo "==.gitconfig=="
-cat << !EOF! > /root/.gitconfig
+cat << '!EOF!' > /root/.gitconfig
 [pull]
 	rebase = false
 [init]
@@ -74,17 +74,25 @@ mv /etc/resolv.conf.back /etc/resolv.conf
 sed "s/#ParallelDownloads = 5/ParallelDownloads = 5/g" /etc/pacman.conf -i
 pacman -Syuu
 pacman -S archlinuxcn-keyring --noconfirm
-pacman -S os-prober efibootmgr archlinuxcn-mirrorlist-git clash-geoip clash-premium-bin nmap socat duf nnn atool htop grub openssh python python-pip zsh zsh-doc tcpdump man git tmux zip unzip wget cronie bmon vim networkmanager fail2ban nginx mariadb --noconfirm
-curl https://cdn.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/clash.service -o /etc/systemd/system/clash@.service
-curl https://cdn.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/renew_log.sh -o /root/renew_log.sh
-curl https://cdn.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/fail2ban.tgz -o /etc/fail2ban/fail2ban.tgz
-curl https://cdn.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/nginx_renew.sh -o /etc/nginx/nginx_renew.sh
+pacman -S os-prober efibootmgr archlinuxcn-mirrorlist-git clash-geoip tailscale docker-compose docker zerotier-one clash-premium-bin nmap socat duf nnn lsof p7zip caddy atool htop grub promtail openssh python python-pip zsh zsh-doc tcpdump man ugrep git tmux zip unzip wget cronie bmon vim networkmanager fail2ban nginx mariadb --noconfirm
+mv /etc/nginx/nginx.conf /etc/nginx/nginx.conf.origin
+mkdir -p /etc/docker
+curl https://fastly.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/clash.service -o /etc/systemd/system/clash@.service
+curl https://fastly.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/renew_log.sh -o /root/renew_log.sh
+curl https://fastly.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/fail2ban.tgz -o /etc/fail2ban/fail2ban.tgz
+curl https://fastly.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/nginx_renew.sh -o /etc/nginx/nginx_renew.sh
+curl https://fastly.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/nginx.conf -o /etc/nginx/nginx.conf
+curl https://fastly.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/nginx_config.7z -o /etc/nginx/nginx_config.7z
+curl https://fastly.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/promtail.yaml -o /etc/loki/promtail.yaml
+curl https://fastly.jsdelivr.net/gh/d-w-x/files_and_scripts@master/linux_scripts/install_arch/files/daemon.json -o /etc/docker/daemon.json
 tar -zxvf /etc/fail2ban/fail2ban.tgz -C /etc/fail2ban
 rm -rf /etc/fail2ban/fail2ban.tgz
+p7zip nginx_config.7z -o/etc/nginx/
+sed -i "s/origin_host/${hostnm}/g" /etc/loki/promtail.yaml
 
 echo "==systemctl=="
 systemctl disable systemd-networkd.service systemd-resolved.service
-systemctl enable NetworkManager.service sshd.service cronie.service nginx.service mariadb.service iptables.service fail2ban.service
+systemctl enable NetworkManager.service sshd.service cronie.service mariadb.service iptables.service promtail.service
 rm -rf /var/lib/mysql
 mkdir -p /var/lib/mysql
 mariadb-install-db --user=mysql --basedir=/usr --datadir=/var/lib/mysql
@@ -109,6 +117,7 @@ cd ~
 git clone https://ghproxy.com/github.com/acmesh-official/acme.sh.git
 cd acme.sh
 ./acme.sh --install
+cd ~
 rm -rf acme.sh
 mkdir -p /var/www/letsencrypt
 
@@ -128,8 +137,6 @@ net.ipv4.tcp_congestion_control=bbr
 !EOF!
 
 ln -s /bin/vim /bin/vi
-sed -i "s/#ClientAliveInterval 0/ClientAliveInterval 60/g" /etc/ssh/sshd_config
-sed -i "s/#ClientAliveCountMax 3/ClientAliveCountMax 3/g" /etc/ssh/sshd_config
 passwd
 
 echo "============================================"
